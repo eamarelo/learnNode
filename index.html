@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ChatBot</title>
+    <style>
+    #zone_chat strong {
+        color: white;
+        background-color: black;
+        padding: 2px;
+    }
+
+    #formulaire_chat{
+        text-align: center;
+        margin-top: 33%;
+    }
+
+    .titleChatBot{
+        text-align: "center";
+        background-color: red;
+    }
+    #zone_chat{
+        background-color: #ccccff;
+        border :2px black solid;
+    }
+
+</style>
+</head>
+
+<body>
+    <h1 class="titleChatBot">The ChatBot</h1>
+
+    <section id="zone_chat">
+        <div id="infoposition"></div>
+    </section>
+
+    <form action="/" method="post" id="formulaire_chat">
+        <input type="text" name="message" id="message" placeholder="Votre message..." size="50" autofocus />
+        <input type="submit" id="envoi_message" value="Envoyer" />
+    </form>
+
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+            // Connexion à socket.io
+            var socket = io.connect('http://localhost:8080');
+
+            // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
+            var pseudo = prompt('Quel est votre pseudo ?');
+            socket.emit('nouveau_client', pseudo);
+            document.title = pseudo + ' - ' + document.title;
+
+            // Quand on reçoit un message, on l'insère dans la page
+            socket.on('message', function(data) {
+                insereMessage(data.pseudo, data.message);
+                
+            })
+
+            socket.on('nouveau_client', function(pseudo) {
+                $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
+            })
+
+
+            // Quand un nouveau client se connecte, on affiche l'information
+            socket.on('msgYtb', function(data) {
+                var content =
+                "<iframe id='player' type='text/html' width='640' height='360'" + 
+                "src='http://www.youtube.com/embed/" + data + "'"+
+                " frameborder='0'>" +
+                "</iframe>"+
+                "<br>";
+
+                $('#zone_chat').prepend(content);
+            });
+
+            socket.on('messageCarrefour', data => {
+                var content =
+                "<h4>" + data.name + "</h4>"+
+                "<p>" + data.address + "</p>" +
+                "<iframe "+
+                "width='600' "+
+                "height='450' "+
+                "frameborder='0' style='border:0' "+
+                "src='https://www.google.com/maps/embed/v1/place?key=AIzaSyBzhXQGlpp20V71dGCT_67REdUlWe-Gpog"+
+                "&q=" + data.latitude + "," + data.longitude +"' allowfullscreen> "+
+                "</iframe>";
+
+                $('#zone_chat').prepend(content);
+            });
+
+                        socket.on('priceUber', data => {
+                var content =
+                "<h4>" + data.estimate + "</h4>";
+
+                $('#zone_chat').prepend(content);
+            });
+
+            // Lorsqu'on envoie le formulaire, on transmet le message et on l'affiche sur la page
+            $('#formulaire_chat').submit(function () {
+                var message = $('#message').val();
+
+                if (message.indexOf("/youtube")!= -1){
+                             socket.emit('msgYtb', message); // Transmet le message aux autres
+                             $('#zone_chat').prepend('<p>' + pseudo + ' a  demandé youtube!</p>');
+                         }
+                         if (message.indexOf("/carrefour")!= -1){
+
+                           function getLocation() {
+                              if (navigator.geolocation) {
+                                  navigator.geolocation.getCurrentPosition(showPosition);
+                              } else { 
+                                alert("Geolocation is not supported by this browser.")
+                            }
+                        }
+
+                        function showPosition(position) {
+
+                            const positionGPS=[position.coords.latitude,position.coords.longitude];
+                            const test= [2.3823087999999997,48.896551699999996];
+
+                            socket.emit('messageCarrefour', positionGPS);
+                            alert('test2');
+                        }
+                        getLocation()
+                        $('#zone_chat').prepend('<p>' + pseudo + ' a  demandé carrefour!</p>');
+                    }
+
+
+                    if (message.indexOf("/uber")!= -1){
+                           function getLocation() {
+                              if (navigator.geolocation) {
+                                  navigator.geolocation.getCurrentPosition(showPosition);
+                              } else { 
+                                alert("Geolocation is not supported by this browser.")
+                            }
+                        }
+
+                        function showPosition(position) {
+
+                            const positionGPS=[position.coords.latitude,position.coords.longitude];
+                            const test= [2.3823087999999997,48.896551699999996];
+
+                            socket.emit('uber', positionGPS);
+                        }
+                        getLocation()
+                        $('#zone_chat').prepend('<p>' + pseudo + ' a  demandé uber!</p>');
+                         }
+
+                socket.emit('message', message); // Transmet le message aux autres
+                insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+
+                $('#message').val('').focus(); // Vide la zone de Chat et remet le focus dessus
+                return false; // Permet de bloquer l'envoi "classique" du formulaire
+            });
+            
+            // Ajoute un message dans la page
+            function insereMessage(pseudo, message) {
+                $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
+            }
+
+        </script>
+    </body>
+    </html>

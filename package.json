@@ -1,0 +1,22 @@
+{
+  "name": "super-chat",
+  "version": "0.1.0",
+  "dependencies": {
+    "ent": "~0.1.0",
+    "express": "~3.3.4",
+    "request": "^2.83.0",
+    "socket.io": "~1.2.1"
+  },
+  "author": "eamarelo alias echoboy <eamarel@hotmail.fr>",
+  "description": "Un gestionnaire de todolist ultra basique",
+  "main": "serveur.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node serveur.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "add"
+  },
+  "license": "MIT"
+}
