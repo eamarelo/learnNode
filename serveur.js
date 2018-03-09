@@ -6,6 +6,8 @@ io = require('socket.io').listen(server),
     request = require('request');
     var longitude;
     var latitude;
+    var destLng;
+    var destLat;
 
 // Chargement de la page index.html
 app.get('/', function (req, res) {
@@ -40,48 +42,95 @@ io.sockets.on('connection', function (socket, pseudo) {
     });
 
     socket.on('uber', function (message) {
-      request({
+
+      const callDestPosition = (query, callback) => {
+        const destinations = [];
+        const params = {
+          url: 'https://maps.googleapis.com/maps/api/geocode/json?address=paris+14&key=AIzaSyD_cHHLJDfVdhAMorhXUu_-CEJu9FcJGrc', 
+          json: true
+        }
+
+        request(params, (err, res, json) => {
+          if (err) {
+            throw err;
+          }
+
+          for (let i = 0; i <1 ; i += 1){
+            destinations.push(json.results[0].geometry.location);
+          }
+          console.log("destinations:  " + destinations);
+          callback(destinations);
+        });
+
+        return;
+      }
+
+      callDestPosition('yoda', destinations => {
+        console.log('dessssss' + destinations[0].lat);
+        var options = {
+          method: 'GET',
+          url: 'https://api.uber.com/v1.2/estimates/price',
+          qs: {
+            start_longitude: message[1],
+            start_latitude: message[0], 
+            end_latitude: destinations[0].lat,
+            end_longitude: destinations[0].lng
+          },
+          headers:{
+            'Authorization': 'Token ' + 'aBxZ-6xJF5xCegAjjXXSMNCy_fI0SCKXbPq86PkZ',
+            'Accept-Language': 'en_US',
+            'Content-Type':  'application/json'
+          } 
+        };
+
+        request(options, function (error, response, body) {
+          if (error) return  console.error('Failed: %s', error.message);
+
+          else {
+            let jsonUber = JSON.parse(body);
+            console.log(jsonUber);
+            console.log('dest ' + destinations);
+            let tableau=  [];
+            tableau.push(destinations, jsonUber.prices);
+
+            for(var k=0; k < jsonUber.prices.length; k++){
+
+             console.log('for ');
+
+           } 
+           console.log('--------------', tableau[0]);
+           console.log('111111111111', tableau[1]);
+
+           socket.emit('priceUber', tableau);
+         }
+       });
+      });
+      /*request(callback, {
         url: 'https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=AIzaSyD_cHHLJDfVdhAMorhXUu_-CEJu9FcJGrc', json: true
       }, function(err, res, json) {
         if (err) {
           throw err;
         } else {
-          console.log(json.results[0].geometry.location.lat);
+          socket.emit('destLat', json.results[0].geometry.location.lat);
+          console.log(json.results[0].geometry.location);
+          var destLng = json.results[0].geometry.location.lng;
+          var destLat = json.results[0].geometry.location.lat;
+
+          console.log(destLng);
+          console.log(destLat);
+          socket.emit('destLng', destLng);
+          socket.emit('destLat', destLat);
 /*          var test = json.items;
           var idYoutube = [];
 
           for(var j=0; j < test.length; j++){
            socket.emit('msgYtb', test[j].id.videoId);*/
-         }   
-       });
+        /* }   
+         callback(destLng, destLat);
+       });*/
 
-      var options = {
-        method: 'GET',
-        url: 'https://api.uber.com/v1.2/estimates/price',
-        qs: {
-          start_longitude: message[1],
-          start_latitude: message[0], 
-          end_latitude: 48.8584,
-          end_longitude: 2.2945
-        },
-        headers:{
-          'Authorization': 'Token ' + 'aBxZ-6xJF5xCegAjjXXSMNCy_fI0SCKXbPq86PkZ',
-          'Accept-Language': 'en_US',
-          'Content-Type':  'application/json'
-        } 
-      };
 
-      request(options, function (error, response, body) {
-        if (error) return  console.error('Failed: %s', error.message);
-
-        else {
-          let jsonUber = JSON.parse(body);
-          for(var k=0; k < jsonUber.prices.length; k++){
-           socket.emit('priceUber', jsonUber.prices[k]);
-         } 
-       }
      });
-    });
 
 
 
