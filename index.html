@@ -98,14 +98,19 @@
                 for(var z =0; z <priceUber.length; z++){
                     console.log('-----------------',priceUber[z].estimate);
                     var content =
-                    "<h4>" + priceUber[z].estimate + "</h4>" +
+                    "<div>"+
+                    "<h4>"+ priceUber[z].display_name +"</h4>"+
+                    "<p>"+ priceUber[z].duration + " en secondes </p>" +
+                    "<p>"+ priceUber[z].distance + " km </p>" +
+                    "<p>" + priceUber[z].estimate + "</p>" +
                     "<iframe "+
                     "width='600' "+
                     "height='450' "+
                     "frameborder='0' style='border:0' "+
                     "src='https://www.google.com/maps/embed/v1/place?key=AIzaSyBzhXQGlpp20V71dGCT_67REdUlWe-Gpog"+
                     "&q=" + destPosition[0].lat + "," + destPosition[0].lng +"' allowfullscreen> "+
-                    "</iframe>";
+                    "</iframe>"+
+                    "</div>";
 
                     $('#zone_chat').prepend(content);  
                 }

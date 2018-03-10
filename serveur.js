@@ -46,7 +46,7 @@ io.sockets.on('connection', function (socket, pseudo) {
       const callDestPosition = (query, callback) => {
         const destinations = [];
         const params = {
-          url: 'https://maps.googleapis.com/maps/api/geocode/json?address=paris+14&key=AIzaSyD_cHHLJDfVdhAMorhXUu_-CEJu9FcJGrc', 
+          url: 'https://maps.googleapis.com/maps/api/geocode/json?address=denfert+rochereau&key=AIzaSyD_cHHLJDfVdhAMorhXUu_-CEJu9FcJGrc', 
           json: true
         }
 
